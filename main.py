@@ -7,6 +7,8 @@ pygame.init()
 window = pygame.display.set_mode((WIDTH, HEIGHT + 50))
 clock = pygame.time.Clock()
 
+VALID_VALUES = [str(i) for i in range(1, 10)]
+
 grid_width = WIDTH // 3
 grid_height = HEIGHT // 3
 
@@ -58,6 +60,10 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                solve(grids, rows, columns)
+            
             if event.type == pygame.MOUSEBUTTONDOWN:
                 position = event.dict['pos']
                 
@@ -92,7 +98,7 @@ def main():
                                         break
 
                                     field.value = input
-                                    if check_conditions(field, grids) and check_conditions(field, rows) and check_conditions(field, columns) and int(input) > 0:
+                                    if check_conditions(field, field.value, grids) and check_conditions(field, field.value, rows) and check_conditions(field, field.value, columns) and int(input) > 0:
                                         update_values(grids)
                                         update_values(rows)
                                         update_values(columns)
@@ -134,21 +140,50 @@ def display_number(value, position):
     text = font.render(str(value), True, BLACK)
     window.blit(text, position)
 
-def check_conditions(field, area):
+def check_conditions(field, value, area):
+    local_fields = fields
+
     for element in area:
-        if fields.index(field) in element.field_indexes:
-            if field.value in element.field_values:
+        if local_fields.index(field) in element.field_indexes:
+            if value in element.field_values:
                 return False
     return True
 
 def update_values(area):
+    local_fields = fields
+
     for element in area:
         element.field_values = []
 
     for element in area:
-        for field in fields:
-            if fields.index(field) in element.field_indexes and field.value:
+        for field in local_fields:
+            if local_fields.index(field) in element.field_indexes and field.value:
                 element.field_values.append(field.value)
+
+def solve(grids, rows, columns):
+    local_fields = fields
+    values = VALID_VALUES
+    empty_fields = 0
+
+    for field in local_fields:
+        field.possible_values = []
+        if not field.value:
+            empty_fields += 1
+            for value in values:
+                if check_conditions(field, value, grids) and check_conditions(field, value, rows) and check_conditions(field, value, columns):
+                    field.possible_values.append(value)
+        if len(field.possible_values) == 1:
+            field.value = field.possible_values[0]
+    
+    update_values(grids)
+    update_values(rows)
+    update_values(columns)
+    
+    if empty_fields == 0:
+        print("solved")
+        return
+    
+    solve(grids, rows, columns)
 
 if __name__ == "__main__":
     main()

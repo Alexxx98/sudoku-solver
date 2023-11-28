@@ -5,6 +5,7 @@ class Field:
         self.width = params[2]
         self.height = params[3]
         self.value = None
+        self.possible_values = []
 
 class Grid:
     def __init__(self, params):
