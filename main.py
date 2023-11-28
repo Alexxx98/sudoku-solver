@@ -47,6 +47,9 @@ for index, grid in enumerate(grids):
         index += 12
 
     grid.field_indexes = [for_grids[chunk] for chunk in range(index, len(for_grids), column_length // 3)]
+    grid.field_indexes = grid.field_indexes[:3]
+    grid.field_indexes = [item for chunk in grid.field_indexes for item in chunk]
+
 
 def main():
     running = True
@@ -80,7 +83,11 @@ def main():
                                         break
 
                                     field.value = input
-                                    if check_grid(field, grids) and check_conditions(field, rows) and check_conditions(field, columns) and int(input) > 0:
+                                    if check_conditions(field, grids) and check_conditions(field, rows) and check_conditions(field, columns) and int(input) > 0:
+                                        update_values(field, grids)
+                                        update_values(field, rows)
+                                        update_values(field, columns)
+
                                         listening = False
                                     else:
                                         field.value = None
@@ -123,17 +130,12 @@ def check_conditions(field, area):
         if fields.index(field) in element.field_indexes:
             if field.value in element.field_values:
                 return False
-            element.field_values.append(field.value)
     return True
 
-def check_grid(field, grids):
-    for grid in grids:
-        for indexes in grid.field_indexes:
-            if fields.index(field) in indexes:
-                if field.value in grid.field_values:
-                    return False
-                grid.field_values.append(field.value)    
-    return True
+def update_values(field, area):
+    for element in area:
+        if fields.index(field) in element.field_indexes:
+            element.field_values.append(field.value)
 
 if __name__ == "__main__":
     main()
