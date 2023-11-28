@@ -68,13 +68,22 @@ def main():
                         pygame.display.flip()
                         
                         listening = True
-                        while listening:
+                        while listening:                       
                             for event in pygame.event.get():
                                 if event.type == pygame.KEYDOWN:
                                     input = event.dict['unicode']
 
                                     # if escape key clicked, turn off highlight
                                     if event.dict['key'] == 27:
+                                        listening = False
+
+                                    if input == "0":
+                                        field.value = None
+
+                                        update_values(grids)
+                                        update_values(rows)
+                                        update_values(columns)
+
                                         listening = False
 
                                     try:
@@ -84,9 +93,9 @@ def main():
 
                                     field.value = input
                                     if check_conditions(field, grids) and check_conditions(field, rows) and check_conditions(field, columns) and int(input) > 0:
-                                        update_values(field, grids)
-                                        update_values(field, rows)
-                                        update_values(field, columns)
+                                        update_values(grids)
+                                        update_values(rows)
+                                        update_values(columns)
 
                                         listening = False
                                     else:
@@ -132,10 +141,14 @@ def check_conditions(field, area):
                 return False
     return True
 
-def update_values(field, area):
+def update_values(area):
     for element in area:
-        if fields.index(field) in element.field_indexes:
-            element.field_values.append(field.value)
+        element.field_values = []
+
+    for element in area:
+        for field in fields:
+            if fields.index(field) in element.field_indexes and field.value:
+                element.field_values.append(field.value)
 
 if __name__ == "__main__":
     main()
