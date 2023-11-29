@@ -140,25 +140,28 @@ def display_number(value, position):
     text = font.render(str(value), True, BLACK)
     window.blit(text, position)
 
-def check_conditions(field, value, area):
+def check_conditions(field, value, *areas):
     local_fields = fields
 
-    for element in area:
-        if local_fields.index(field) in element.field_indexes:
-            if value in element.field_values:
-                return False
+    for area in areas:
+        for element in area:
+            if local_fields.index(field) in element.field_indexes:
+                if value in element.field_values:
+                    return False
     return True
 
-def update_values(area):
+def update_values(*areas):
     local_fields = fields
 
-    for element in area:
-        element.field_values = []
+    for area in areas:
+        for element in area:
+            element.field_values = []
 
-    for element in area:
-        for field in local_fields:
-            if local_fields.index(field) in element.field_indexes and field.value:
-                element.field_values.append(field.value)
+    for area in areas:
+        for element in area:
+            for field in local_fields:
+                if local_fields.index(field) in element.field_indexes and field.value:
+                    element.field_values.append(field.value)
 
 def solve(grids, rows, columns):
     local_fields = fields
@@ -170,20 +173,38 @@ def solve(grids, rows, columns):
         if not field.value:
             empty_fields += 1
             for value in values:
-                if check_conditions(field, value, grids) and check_conditions(field, value, rows) and check_conditions(field, value, columns):
+                if check_conditions(field, value, grids, rows, columns):
                     field.possible_values.append(value)
         if len(field.possible_values) == 1:
             field.value = field.possible_values[0]
+            field.possible_values = []
     
-    update_values(grids)
-    update_values(rows)
-    update_values(columns)
+    update_values(grids, rows, columns)
     
     if empty_fields == 0:
         print("solved")
         return
     
     solve(grids, rows, columns)
+
+def advanced_solve(grids, rows, columns):
+    local_fields = fields
+
+    empty_fields = [field for field in local_fields if field.possible_values]
+    remaining_empty_fields = len(empty_fields)
+    for field in empty_fields:
+        for possible_value in field.possible_values:
+            if check_conditions(field, possible_value, grids, rows, columns):
+                field.value = possible_value
+                remaining_empty_fields -= 1
+                break
+
+    update_values(grids, rows, columns)
+    
+    if remaining_empty_fields == 0:
+        return
+    
+    advanced_solve(grids, rows, columns)
 
 if __name__ == "__main__":
     main()
